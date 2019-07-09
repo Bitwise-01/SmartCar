@@ -7,8 +7,8 @@ class Engine
 {
 public:
     Engine(const unsigned char t_motor, const unsigned char t_forward, const unsigned char t_backward);
-    bool isMovingForward() const;
     void drive(unsigned int t_speed, bool t_isForward = true);
+    bool isMovingForward() const;
     void stop();
 
 private:

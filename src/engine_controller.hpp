@@ -6,27 +6,30 @@ namespace engineController
 class EngineControllerConsts
 {
 public:
-    static const unsigned int m_MIN_SPEED = 0U;
-    static const unsigned int m_MAX_SPEED = 255U;
-    static const unsigned int m_ACCEL_RATE = 20U;
-    static const unsigned int m_HALF_SPEED = 127U;
+    static const unsigned int MAX_SPEED = 254U;
+    static const unsigned int HALF_SPEED = 140U; // I know it's not half the speed
 };
 
 class EngineController
 {
 public:
     EngineController(engine::Engine &t_e1, engine::Engine &t_e2, engine::Engine &t_e3, engine::Engine &t_e4);
-    void accelerate(bool t_goForward = true);
-    void decelerate(bool t_goForward = true);
     unsigned int getSpeed() const;
     bool isMovingForward();
     void brake();
 
+    void driveForward(unsigned int speed = 0);
+    void driveBackward(unsigned int speed = 0);
+
     // Turns: Forward
+    void leftTurnForward();
+    void rightTurnForward();
     void softLeftTurnForward();
     void softRightTurnForward();
 
     // Turns: Backward
+    void leftTurnBackward();
+    void rightTurnBackward();
     void softLeftTurnBackward();
     void softRightTurnBackward();
 
@@ -37,15 +40,8 @@ private:
         m_engine3,
         m_engine4;
 
-    bool
-        m_minSpeedReached,
-        m_maxSpeedReached;
-
     unsigned int m_currentSpeed;
-    const unsigned int m_ACCEL_RATE;
 
-    void m_drive(bool t_goForward);
-    void m_accelerate(bool t_goForward);
-    void m_decelerate(bool t_goForward);
+    void m_drive(bool t_goForward = true);
 };
 } // namespace engineController

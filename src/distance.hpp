@@ -1,5 +1,5 @@
 #pragma once
-#include "thread.hpp"
+#include <Arduino.h>
 namespace distance
 {
 class Constants
@@ -8,8 +8,11 @@ public:
     // Intervals (millis)
     static const unsigned long TRIG_PIN_LOW_INTERVAL = 2UL;
     static const unsigned long TRIG_PIN_HIGH_INTERVAL = 1UL;
-    static const unsigned long SPEED_UPDATE_INTERVAL = 250UL;
     static const unsigned long MEASURE_DISTANCE_INTERVAL = 35UL;
+
+    // Limits
+    static constexpr double MIN_DIST = 15.0;  // 18.5; // cm
+    static const unsigned int SAFE_DIST = 3U; // Go slow when inder this distance
 
     // Counts
     static const unsigned int TRIG_PIN_LOW_MAX_COUNTS = 2U;
@@ -22,18 +25,13 @@ public:
     double getDistance() const;
     double getSpeed() const;
     void measureDistance();
-    void measureSpeed();
     void trigPinHigh();
     void trigPinLow();
 
 private:
     double m_getDistance();
 
-    double m_lastDistance;
     double m_currentDistance;
-
-    // cm/sec
-    double m_speed;
     const unsigned char m_echoPin;
     const unsigned char m_trigPin;
     unsigned int m_trigPinLowCounter;

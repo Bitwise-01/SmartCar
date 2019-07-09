@@ -8,75 +8,8 @@ EngineController::EngineController(
       m_engine2(t_e2),
       m_engine3(t_e3),
       m_engine4(t_e4),
-      m_minSpeedReached(true),
-      m_maxSpeedReached(false),
-      m_currentSpeed(EngineControllerConsts::m_MIN_SPEED),
-      m_ACCEL_RATE(EngineControllerConsts::m_ACCEL_RATE) {}
-
-void EngineController::accelerate(bool t_goForward)
+      m_currentSpeed(EngineControllerConsts::MAX_SPEED)
 {
-    if (m_currentSpeed >= engineController::EngineControllerConsts::m_MAX_SPEED)
-    {
-        m_maxSpeedReached = true;
-        m_minSpeedReached = false;
-    }
-
-    if (!m_maxSpeedReached)
-    {
-        m_accelerate(t_goForward);
-    }
-}
-
-void EngineController::m_accelerate(bool t_goForward)
-{
-    unsigned int currentSpeed = m_currentSpeed;
-
-    if (currentSpeed + m_ACCEL_RATE <= EngineControllerConsts::m_MAX_SPEED)
-    {
-        m_currentSpeed += m_ACCEL_RATE;
-    }
-    else if (currentSpeed + 1 <= EngineControllerConsts::m_MAX_SPEED)
-    {
-        m_currentSpeed += 1;
-    }
-
-    if (currentSpeed != m_currentSpeed)
-    {
-        m_drive(t_goForward);
-    }
-}
-
-void EngineController::decelerate(bool t_goForward)
-{
-    if (m_currentSpeed == engineController::EngineControllerConsts::m_MIN_SPEED)
-    {
-        m_minSpeedReached = true;
-        m_maxSpeedReached = false;
-    }
-
-    if (!m_minSpeedReached)
-    {
-        m_decelerate(t_goForward);
-    }
-}
-
-void EngineController::m_decelerate(bool t_goForward)
-{
-    int currentSpeed = m_currentSpeed;
-
-    if (currentSpeed - static_cast<int>(m_ACCEL_RATE) >= static_cast<int>(EngineControllerConsts::m_MIN_SPEED))
-    {
-        m_currentSpeed -= m_ACCEL_RATE;
-    }
-    else if (currentSpeed - 1 >= static_cast<int>(EngineControllerConsts::m_MIN_SPEED))
-    {
-        m_currentSpeed -= 1;
-    }
-
-    if (static_cast<unsigned int>(currentSpeed) != m_currentSpeed)
-    {
-        m_drive(t_goForward);
-    }
 }
 
 unsigned int EngineController::getSpeed() const
@@ -86,8 +19,9 @@ unsigned int EngineController::getSpeed() const
 
 bool EngineController::isMovingForward()
 {
-    return m_engine1.isMovingForward() && m_engine2.isMovingForward() &&
-           m_engine3.isMovingForward() && m_engine4.isMovingForward();
+    return m_engine1.isMovingForward() && m_engine3.isMovingForward();
+    // return m_engine1.isMovingForward() && m_engine2.isMovingForward() &&
+    //        m_engine3.isMovingForward() && m_engine4.isMovingForward();
 }
 
 void EngineController::brake()
@@ -101,45 +35,111 @@ void EngineController::brake()
 
 void EngineController::m_drive(bool t_goForward)
 {
+    // Uncomment isMovingForward function
+
     m_engine1.drive(m_currentSpeed, t_goForward);
-    m_engine2.drive(m_currentSpeed, t_goForward);
+    // m_engine2.drive(m_currentSpeed, t_goForward);
 
     m_engine3.drive(m_currentSpeed, t_goForward);
-    m_engine4.drive(m_currentSpeed, t_goForward);
+    // m_engine4.drive(m_currentSpeed, t_goForward);
+}
+
+void EngineController::driveForward(unsigned int speed)
+{
+    if (speed == 0)
+    {
+        m_currentSpeed = EngineControllerConsts::MAX_SPEED;
+    }
+    else
+    {
+        m_currentSpeed = speed;
+    }
+
+    m_drive();
+}
+
+void EngineController::driveBackward(unsigned int speed)
+{
+    if (speed == 0)
+    {
+        m_currentSpeed = EngineControllerConsts::MAX_SPEED;
+    }
+    else
+    {
+        m_currentSpeed = speed;
+    }
+
+    m_drive(false);
 }
 
 void EngineController::softLeftTurnForward()
 {
-    m_engine1.drive(EngineControllerConsts::m_HALF_SPEED, false);
-    m_engine3.drive(EngineControllerConsts::m_HALF_SPEED, false);
+    m_engine1.drive(EngineControllerConsts::HALF_SPEED);
+    m_engine3.drive(EngineControllerConsts::HALF_SPEED);
 
-    m_engine2.drive(EngineControllerConsts::m_MAX_SPEED);
-    m_engine4.drive(EngineControllerConsts::m_MAX_SPEED);
+    m_engine2.drive(EngineControllerConsts::MAX_SPEED);
+    m_engine4.drive(EngineControllerConsts::MAX_SPEED);
 }
 
 void EngineController::softRightTurnForward()
 {
-    m_engine1.drive(EngineControllerConsts::m_HALF_SPEED);
-    m_engine3.drive(EngineControllerConsts::m_HALF_SPEED);
+    m_engine1.drive(EngineControllerConsts::HALF_SPEED);
+    m_engine3.drive(EngineControllerConsts::HALF_SPEED);
 
-    m_engine2.drive(EngineControllerConsts::m_MAX_SPEED, false);
-    m_engine4.drive(EngineControllerConsts::m_MAX_SPEED, false);
+    m_engine2.drive(EngineControllerConsts::MAX_SPEED);
+    m_engine4.drive(EngineControllerConsts::MAX_SPEED);
 }
 
 void EngineController::softLeftTurnBackward()
 {
-    m_engine1.drive(EngineControllerConsts::m_HALF_SPEED, false);
-    m_engine3.drive(EngineControllerConsts::m_HALF_SPEED, false);
+    m_engine1.drive(EngineControllerConsts::HALF_SPEED, false);
+    m_engine3.drive(EngineControllerConsts::HALF_SPEED, false);
 
-    m_engine2.drive(EngineControllerConsts::m_MAX_SPEED, false);
-    m_engine4.drive(EngineControllerConsts::m_MAX_SPEED, false);
+    m_engine2.drive(EngineControllerConsts::MAX_SPEED, false);
+    m_engine4.drive(EngineControllerConsts::MAX_SPEED, false);
 }
 
 void EngineController::softRightTurnBackward()
 {
-    m_engine2.drive(EngineControllerConsts::m_HALF_SPEED, false);
-    m_engine4.drive(EngineControllerConsts::m_HALF_SPEED, false);
+    m_engine2.drive(EngineControllerConsts::HALF_SPEED, false);
+    m_engine4.drive(EngineControllerConsts::HALF_SPEED, false);
 
-    m_engine1.drive(EngineControllerConsts::m_MAX_SPEED, false);
-    m_engine3.drive(EngineControllerConsts::m_MAX_SPEED, false);
+    m_engine1.drive(EngineControllerConsts::MAX_SPEED, false);
+    m_engine3.drive(EngineControllerConsts::MAX_SPEED, false);
+}
+
+void EngineController::leftTurnForward()
+{
+    m_engine1.drive(EngineControllerConsts::HALF_SPEED, false);
+    m_engine3.drive(EngineControllerConsts::HALF_SPEED, false);
+
+    m_engine2.drive(EngineControllerConsts::MAX_SPEED);
+    m_engine4.drive(EngineControllerConsts::MAX_SPEED);
+}
+
+void EngineController::rightTurnForward()
+{
+    m_engine1.drive(EngineControllerConsts::MAX_SPEED);
+    m_engine3.drive(EngineControllerConsts::MAX_SPEED);
+
+    m_engine2.drive(EngineControllerConsts::HALF_SPEED, false);
+    m_engine4.drive(EngineControllerConsts::HALF_SPEED, false);
+}
+
+void EngineController::leftTurnBackward()
+{
+    m_engine1.drive(EngineControllerConsts::HALF_SPEED, false);
+    m_engine3.drive(EngineControllerConsts::HALF_SPEED, false);
+
+    m_engine2.drive(EngineControllerConsts::MAX_SPEED, false);
+    m_engine4.drive(EngineControllerConsts::MAX_SPEED, false);
+}
+
+void EngineController::rightTurnBackward()
+{
+    m_engine1.drive(EngineControllerConsts::MAX_SPEED, false);
+    m_engine3.drive(EngineControllerConsts::MAX_SPEED, false);
+
+    m_engine2.drive(EngineControllerConsts::HALF_SPEED, false);
+    m_engine4.drive(EngineControllerConsts::HALF_SPEED, false);
 }

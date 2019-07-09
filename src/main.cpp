@@ -1,5 +1,4 @@
 #include <Arduino.h>
-
 #include "list.hpp"
 #include "thread.hpp"
 #include "engine.hpp"
@@ -15,68 +14,14 @@ public:
     static const unsigned char TRIG_PIN = 22;
     static const unsigned char ECHO_PIN = 24;
 };
-
 } // namespace distanceController
 
-distance::Distance *distanceManager = new distance::Distance(distanceController::Constants::TRIG_PIN,
-                                                             distanceController::Constants::ECHO_PIN);
-
-void trigPinLow();
-void trigPinHigh();
-void measureSpeed();
-void measureDistance();
-
-// Threads
-thread::Thread trigPinLowThread(trigPinLow, distance::Constants::TRIG_PIN_LOW_INTERVAL);
-thread::Thread trigPinHighThread(trigPinHigh, distance::Constants::TRIG_PIN_HIGH_INTERVAL);
-thread::Thread measureSpeedThread(measureSpeed, distance::Constants::SPEED_UPDATE_INTERVAL);
-thread::Thread measureDistanceThread(measureDistance, distance::Constants::MEASURE_DISTANCE_INTERVAL);
-
-void setup()
-{
-    Serial.begin(9600);
-    pinMode(distanceController::Constants::ECHO_PIN, INPUT);
-    pinMode(distanceController::Constants::TRIG_PIN, OUTPUT);
-}
-
-void loop()
-{
-    trigPinLowThread.run();
-    trigPinHighThread.run();
-    measureSpeedThread.run();
-    measureDistanceThread.run();
-}
-
-void trigPinLow()
-{
-    distanceManager->trigPinLow();
-}
-
-void trigPinHigh()
-{
-    distanceManager->trigPinHigh();
-}
-
-void measureDistance()
-{
-    distanceManager->measureDistance();
-}
-
-void measureSpeed()
-{
-    distanceManager->measureSpeed();
-    Serial.print("Speed: ");
-    Serial.print(distanceManager->getSpeed());
-    Serial.println(" (cm/s)");
-}
-
-/*
 namespace motors
 {
 class Constants
 {
 public:
-    static const unsigned int ENGINE_CHECK_INTERVAL = 150U;
+    static const unsigned long ENGINE_CHECK_INTERVAL = 150UL;
 
     // Motors : Driver 1
     static const unsigned char MOTOR_1 = 13;          // EnA
@@ -108,11 +53,24 @@ engine::Engine
 // Engine controller
 engineController::EngineController engineDriver(engine1, engine2, engine3, engine4);
 
-// Function declarations
-void driver();
+// Distance
+distance::Distance *distanceManager = new distance::Distance(distanceController::Constants::TRIG_PIN,
+                                                             distanceController::Constants::ECHO_PIN);
+
+// Func decs
+void trigPinLow();
+void trigPinHigh();
+void measureDistance();
+
+// Temp loop
+void nothin();
+
+thread::Thread nothinThread(nothin, motors::Constants::ENGINE_CHECK_INTERVAL);
 
 // Threads
-thread::Thread engineDriverThread(driver, motors::Constants::ENGINE_CHECK_INTERVAL);
+thread::Thread trigPinLowThread(trigPinLow, distance::Constants::TRIG_PIN_LOW_INTERVAL);
+thread::Thread trigPinHighThread(trigPinHigh, distance::Constants::TRIG_PIN_HIGH_INTERVAL);
+thread::Thread measureDistanceThread(measureDistance, distance::Constants::MEASURE_DISTANCE_INTERVAL);
 
 void setup()
 {
@@ -125,7 +83,7 @@ void setup()
             pinMode(pin, m_mode);
         }
 
-    const unsigned char m_mode;
+        const unsigned char m_mode;
     } output(OUTPUT);
 
     // Motor 1
@@ -148,105 +106,64 @@ void setup()
     output(motors::Constants::MOTOR_4_FORWARD);
     output(motors::Constants::MOTOR_4_BACKWARD);
 
+    // Distance
+    pinMode(distanceController::Constants::ECHO_PIN, INPUT);
+    pinMode(distanceController::Constants::TRIG_PIN, OUTPUT);
+
     Serial.begin(9600);
 }
 
 void loop()
 {
-    engineDriverThread.run();
+
+    // Distance
+    trigPinLowThread.run();
+    trigPinHighThread.run();
+    measureDistanceThread.run();
+
+    //Driver
+    nothinThread.run();
 }
 
-void driver()
+void nothin()
 {
-    engineDriver.accelerate();
+    double distance = distanceManager->getDistance();
 
-    if (engineDriver.slowDown())
+    if (distance > distance::Constants::MIN_DIST)
     {
-        Serial.print("Rev ");
-        Serial.println(engineDriver.getSpeed());
-        engineDriver.decelerate(false);
-    }
-
-    if (engineDriver.speedUp())
-    {
-        Serial.print("Str ");
-        Serial.println(engineDriver.getSpeed());
-        engineDriver.accelerate();
-    }
-}
-*/
-
-/*
-void drive(int motor, int forward, int backward, int direction, int power = CRUISING_SPEED)
-{
-
-    // Turn off
-    digitalWrite(forward, LOW);
-    digitalWrite(backward, LOW);
-    delay(MOTOR_DELAY);
-
-    // Set direction
-    if (direction == FORWARD)
-    {
-        digitalWrite(forward, HIGH);
-        digitalWrite(backward, LOW);
+        if (abs(distance - distance::Constants::MIN_DIST) >= distance::Constants::SAFE_DIST)
+        {
+            engineDriver.driveForward();
+        }
+        else
+        {
+            engineDriver.driveForward(engineController::EngineControllerConsts::HALF_SPEED);
+        }
     }
     else
     {
-        digitalWrite(forward, LOW);
-        digitalWrite(backward, HIGH);
+        if (abs(distance - distance::Constants::MIN_DIST) >= distance::Constants::SAFE_DIST)
+        {
+            engineDriver.driveBackward(engineController::EngineControllerConsts::HALF_SPEED);
+        }
+        else
+        {
+            engineDriver.driveBackward();
+        }
     }
-
-    // Apply power
-    analogWrite(motor, power);
 }
 
-// Turns
-
-void softLeftTurn()
+void trigPinLow()
 {
-    drive(MOTOR_1, MOTOR_1_FORWARD, MOTOR_1_BACKWARD, BACKWARD, 0);
-    drive(MOTOR_3, MOTOR_3_FORWARD, MOTOR_3_BACKWARD, BACKWARD, CRUISING_SPEED - 50);
-
-    drive(MOTOR_2, MOTOR_2_FORWARD, MOTOR_2_BACKWARD, FORWARD);
-    drive(MOTOR_4, MOTOR_4_FORWARD, MOTOR_4_BACKWARD, FORWARD);
+    distanceManager->trigPinLow();
 }
 
-void hardLeftTurn()
+void trigPinHigh()
 {
+    distanceManager->trigPinHigh();
 }
 
-void softRightTurn()
+void measureDistance()
 {
-    drive(MOTOR_1, MOTOR_1_FORWARD, MOTOR_1_BACKWARD, FORWARD);
-    drive(MOTOR_3, MOTOR_3_FORWARD, MOTOR_3_BACKWARD, FORWARD);
-
-    drive(MOTOR_2, MOTOR_2_FORWARD, MOTOR_2_BACKWARD, BACKWARD, 0);
-    drive(MOTOR_4, MOTOR_4_FORWARD, MOTOR_4_BACKWARD, BACKWARD, CRUISING_SPEED - 50);
+    distanceManager->measureDistance();
 }
-
-void hardRightTurn()
-{
-}
-
-void loop()
-{
-    // drive(MOTOR_1, MOTOR_1_FORWARD, MOTOR_1_BACKWARD, FORWARD);
-    // drive(MOTOR_2, MOTOR_2_FORWARD, MOTOR_2_BACKWARD, FORWARD);
-    // drive(MOTOR_3, MOTOR_3_FORWARD, MOTOR_3_BACKWARD, FORWARD);
-    // drive(MOTOR_4, MOTOR_4_FORWARD, MOTOR_4_BACKWARD, FORWARD);
-    // delay(8000);
-
-    // drive(MOTOR_1, MOTOR_1_FORWARD, MOTOR_1_BACKWARD, BACKWARD);
-    // drive(MOTOR_2, MOTOR_2_FORWARD, MOTOR_2_BACKWARD, BACKWARD);
-    // drive(MOTOR_3, MOTOR_3_FORWARD, MOTOR_3_BACKWARD, BACKWARD);
-    // drive(MOTOR_4, MOTOR_4_FORWARD, MOTOR_4_BACKWARD, BACKWARD);
-    // delay(8000);
-
-    softLeftTurn();
-    delay(2000);
-
-    softRightTurn();
-    delay(2000);
-}
-*/
