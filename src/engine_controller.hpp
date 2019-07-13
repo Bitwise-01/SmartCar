@@ -1,4 +1,5 @@
 #pragma once
+#include "list.hpp"
 #include "engine.hpp"
 
 namespace engineController
@@ -42,6 +43,17 @@ private:
 
     unsigned int m_currentSpeed;
 
+    // Forward & Backward
+    bool m_lastForward;
+    unsigned int m_counter;
+
+    // Turns
+    bool m_lastForward1;
+    bool m_lastForward2;
+    unsigned int m_turnsCounter;
+
     void m_drive(bool t_goForward = true);
+    void m_drive(engine::Engine t_e1, engine::Engine t_e2, unsigned int t_speed1, bool t_goForward1,
+                 engine::Engine t_e3, engine::Engine t_e4, unsigned int t_speed2, bool t_goForward2);
 };
 } // namespace engineController

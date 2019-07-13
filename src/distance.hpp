@@ -12,7 +12,7 @@ public:
 
     // Limits
     static constexpr double MIN_DIST = 15.0;  // 18.5; // cm
-    static const unsigned int SAFE_DIST = 3U; // Go slow when inder this distance
+    static const unsigned int SAFE_DIST = 3U; // Go slow when under this distance from objects
 
     // Counts
     static const unsigned int TRIG_PIN_LOW_MAX_COUNTS = 2U;

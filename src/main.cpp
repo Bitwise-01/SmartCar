@@ -127,30 +127,31 @@ void loop()
 
 void nothin()
 {
-    double distance = distanceManager->getDistance();
+    // double distance = distanceManager->getDistance();
 
-    if (distance > distance::Constants::MIN_DIST)
-    {
-        if (abs(distance - distance::Constants::MIN_DIST) >= distance::Constants::SAFE_DIST)
-        {
-            engineDriver.driveForward();
-        }
-        else
-        {
-            engineDriver.driveForward(engineController::EngineControllerConsts::HALF_SPEED);
-        }
-    }
-    else
-    {
-        if (abs(distance - distance::Constants::MIN_DIST) >= distance::Constants::SAFE_DIST)
-        {
-            engineDriver.driveBackward(engineController::EngineControllerConsts::HALF_SPEED);
-        }
-        else
-        {
-            engineDriver.driveBackward();
-        }
-    }
+    // if (distance > distance::Constants::MIN_DIST)
+    // {
+    //     if (abs(distance - distance::Constants::MIN_DIST) >= distance::Constants::SAFE_DIST)
+    //     {
+    // engineDriver.driveForward();
+    engineDriver.leftTurnForward();
+    //     }
+    //     else
+    //     {
+    //         engineDriver.driveForward(engineController::EngineControllerConsts::HALF_SPEED);
+    //     }
+    // }
+    // else
+    // {
+    //     if (abs(distance - distance::Constants::MIN_DIST) >= distance::Constants::SAFE_DIST)
+    //     {
+    //         engineDriver.driveBackward(engineController::EngineControllerConsts::HALF_SPEED);
+    //     }
+    //     else
+    //     {
+    //         engineDriver.driveBackward();
+    //     }
+    // }
 }
 
 void trigPinLow()
