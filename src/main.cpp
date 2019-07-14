@@ -120,37 +120,45 @@ void loop()
     trigPinHighThread.run();
     measureDistanceThread.run();
 
-    //Driver
+    // Driver
     nothinThread.run();
 }
 
 void nothin()
 {
-    // double distance = distanceManager->getDistance();
+    double distance = distanceManager->getDistance();
 
     // if (distance > distance::Constants::MIN_DIST)
     // {
-    //     if (abs(distance - distance::Constants::MIN_DIST) >= distance::Constants::SAFE_DIST)
-    //     {
-    // engineDriver.driveForward();
-    engineDriver.leftTurnForward();
-    //     }
-    //     else
-    //     {
-    //         engineDriver.driveForward(engineController::EngineControllerConsts::HALF_SPEED);
-    //     }
+    //     engineDriver.driveForward();
     // }
     // else
     // {
-    //     if (abs(distance - distance::Constants::MIN_DIST) >= distance::Constants::SAFE_DIST)
-    //     {
-    //         engineDriver.driveBackward(engineController::EngineControllerConsts::HALF_SPEED);
-    //     }
-    //     else
-    //     {
-    //         engineDriver.driveBackward();
-    //     }
+    //     engineDriver.driveBackward();
     // }
+
+    if (distance > distance::Constants::MIN_DIST)
+    {
+        if (abs(distance - distance::Constants::MIN_DIST) >= distance::Constants::SAFE_DIST * 2)
+        {
+            engineDriver.driveForward();
+        }
+        else
+        {
+            engineDriver.driveForward(engineController::EngineControllerConsts::HALF_SPEED);
+        }
+    }
+    else
+    {
+        if (abs(distance - distance::Constants::MIN_DIST) >= distance::Constants::SAFE_DIST)
+        {
+            engineDriver.driveBackward(engineController::EngineControllerConsts::HALF_SPEED);
+        }
+        else
+        {
+            engineDriver.driveBackward();
+        }
+    }
 }
 
 void trigPinLow()

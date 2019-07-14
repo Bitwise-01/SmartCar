@@ -40,28 +40,6 @@ void EngineController::brake()
     m_engine4.stop();
 }
 
-void EngineController::m_drive(bool t_goForward)
-{
-    m_engine1.drive(m_currentSpeed, t_goForward);
-    m_engine2.drive(m_currentSpeed, t_goForward);
-
-    if (m_lastForward != t_goForward)
-    {
-        m_lastForward = t_goForward;
-        m_counter = 0;
-    }
-
-    if (m_counter >= 1)
-    {
-        m_engine3.drive(m_currentSpeed, t_goForward);
-        m_engine4.drive(m_currentSpeed, t_goForward);
-    }
-    else
-    {
-        m_counter += 1;
-    }
-}
-
 void EngineController::m_drive(engine::Engine t_e1, engine::Engine t_e2, unsigned int t_speed1, bool t_goForward1,
                                engine::Engine t_e3, engine::Engine t_e4, unsigned int t_speed2, bool t_goForward2)
 {
@@ -97,7 +75,8 @@ void EngineController::driveForward(unsigned int speed)
         m_currentSpeed = speed;
     }
 
-    m_drive();
+    m_drive(m_engine1, m_engine2, m_currentSpeed, true,
+            m_engine3, m_engine4, m_currentSpeed, true);
 }
 
 void EngineController::driveBackward(unsigned int speed)
@@ -111,7 +90,8 @@ void EngineController::driveBackward(unsigned int speed)
         m_currentSpeed = speed;
     }
 
-    m_drive(false);
+    m_drive(m_engine1, m_engine2, m_currentSpeed, false,
+            m_engine3, m_engine4, m_currentSpeed, false);
 }
 
 void EngineController::softLeftTurnForward()
