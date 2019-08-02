@@ -6,13 +6,12 @@ class Constants
 {
 public:
     // Intervals (millis)
-    static const unsigned long TRIG_PIN_LOW_INTERVAL = 30UL; // 2UL
+    static const unsigned long TRIG_PIN_LOW_INTERVAL = 30UL;
     static const unsigned long TRIG_PIN_HIGH_INTERVAL = 1UL;
     static const unsigned long MEASURE_DISTANCE_INTERVAL = 35UL;
 
     // Limits
-    static constexpr double MIN_DIST = 30;    // cm
-    static const unsigned int SAFE_DIST = 3U; // Go slow when under this distance from objects
+    static constexpr double MIN_DIST = 25; // cm
 
     // Counts
     static const unsigned int TRIG_PIN_LOW_MAX_COUNTS = 2U;

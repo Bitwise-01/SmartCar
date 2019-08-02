@@ -1,3 +1,4 @@
+// #include <Servo.h>
 #include <Arduino.h>
 #include "thread.hpp"
 #include "engine.hpp"
@@ -44,10 +45,10 @@ public:
 
 // Engines
 engine::Engine
-    engine1(motors::Constants::MOTOR_1, motors::Constants::MOTOR_1_FORWARD, motors::Constants::MOTOR_1_BACKWARD),
-    engine2(motors::Constants::MOTOR_2, motors::Constants::MOTOR_2_FORWARD, motors::Constants::MOTOR_2_BACKWARD),
-    engine3(motors::Constants::MOTOR_3, motors::Constants::MOTOR_3_FORWARD, motors::Constants::MOTOR_3_BACKWARD),
-    engine4(motors::Constants::MOTOR_4, motors::Constants::MOTOR_4_FORWARD, motors::Constants::MOTOR_4_BACKWARD);
+    *engine1 = new engine::Engine(motors::Constants::MOTOR_1, motors::Constants::MOTOR_1_FORWARD, motors::Constants::MOTOR_1_BACKWARD),
+    *engine2 = new engine::Engine(motors::Constants::MOTOR_2, motors::Constants::MOTOR_2_FORWARD, motors::Constants::MOTOR_2_BACKWARD),
+    *engine3 = new engine::Engine(motors::Constants::MOTOR_3, motors::Constants::MOTOR_3_FORWARD, motors::Constants::MOTOR_3_BACKWARD),
+    *engine4 = new engine::Engine(motors::Constants::MOTOR_4, motors::Constants::MOTOR_4_FORWARD, motors::Constants::MOTOR_4_BACKWARD);
 
 // Engine controller
 engineController::EngineController engineDriver(engine1, engine2, engine3, engine4);
@@ -55,16 +56,18 @@ engineController::EngineController engineDriver(engine1, engine2, engine3, engin
 // Distance
 distance::Distance *distanceManager = new distance::Distance(distanceController::Constants::TRIG_PIN,
                                                              distanceController::Constants::ECHO_PIN);
-
-// Func decs
 void trigPinLow();
 void trigPinHigh();
 void measureDistance();
 
-// Temp loop
-void nothin();
+const int MAX_ROTATES = 5;
+double lastDistance = -1;
+int rotates = 0;
 
-thread::Thread nothinThread(nothin, motors::Constants::ENGINE_CHECK_INTERVAL);
+// Driver
+void drive();
+
+thread::Thread driveThread(drive, motors::Constants::ENGINE_CHECK_INTERVAL);
 
 // Threads
 thread::Thread trigPinLowThread(trigPinLow, distance::Constants::TRIG_PIN_LOW_INTERVAL);
@@ -121,42 +124,26 @@ void loop()
     measureDistanceThread.run();
 
     // Driver
-    nothinThread.run();
+    driveThread.run();
 }
 
-void nothin()
+void drive()
 {
     double distance = distanceManager->getDistance();
 
-    // if (distance > distance::Constants::MIN_DIST)
-    // {
-    //     engineDriver.driveForward();
-    // }
-    // else
-    // {
-    //     engineDriver.driveBackward();
-    // }
-
-    if (distance > distance::Constants::MIN_DIST)
+    if (distance > distance::Constants::MIN_DIST && !engineDriver.isCheckingDirection())
     {
-        if (abs(distance - distance::Constants::MIN_DIST) >= distance::Constants::SAFE_DIST * 2)
-        {
-            engineDriver.driveForward();
-        }
-        else
-        {
-            engineDriver.driveForward(engineController::EngineControllerConsts::HALF_SPEED);
-        }
+        engineDriver.driveForward();
     }
     else
     {
-        if (abs(distance - distance::Constants::MIN_DIST) >= distance::Constants::SAFE_DIST)
+        if (engineDriver.isMovingForward())
         {
-            engineDriver.driveBackward(engineController::EngineControllerConsts::HALF_SPEED);
+            engineDriver.brake();
         }
         else
         {
-            engineDriver.driveBackward();
+            engineDriver.chooseDirection(distanceManager);
         }
     }
 }

@@ -16,10 +16,9 @@ private:
     const unsigned char m_forward;
     const unsigned char m_backward;
 
-    // Movemovents
+    // Movements
     bool m_isActive;
     bool m_isForward;
-    unsigned int m_loops; // When motor changes directions it should loop once before applying power to it
     unsigned int m_speed;
 };
 } // namespace engine

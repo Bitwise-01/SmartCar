@@ -7,14 +7,15 @@ Engine::Engine(const unsigned char t_motor, const unsigned char t_forward, const
       m_backward(t_backward),
       m_isActive(false),
       m_isForward(true),
-      m_loops(0U),
-      m_speed(0U) {}
+      m_speed(0U)
+{
+}
 
 void Engine::drive(unsigned int t_speed, bool t_isForward)
 {
+
     if (!m_isActive || m_isForward != t_isForward)
     {
-        // Turn off
         stop();
 
         // Set direction
@@ -42,18 +43,16 @@ void Engine::drive(unsigned int t_speed, bool t_isForward)
 
 void Engine::stop()
 {
-    if (m_isActive)
-    {
-        m_speed = 0;
-        m_isActive = false;
-        analogWrite(m_motor, m_speed);
+    m_speed = 0;
+    m_isActive = false;
 
-        digitalWrite(m_forward, LOW);
-        digitalWrite(m_backward, LOW);
-    }
+    digitalWrite(m_forward, LOW);
+    digitalWrite(m_backward, LOW);
+
+    analogWrite(m_motor, m_speed);
 }
 
 bool Engine::isMovingForward() const
 {
-    return m_isForward && m_speed;
+    return m_isForward && m_speed > 0;
 }
