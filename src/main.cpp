@@ -1,5 +1,6 @@
 // #include <Servo.h>
 #include <Arduino.h>
+#include "stuck.hpp"
 #include "thread.hpp"
 #include "engine.hpp"
 #include "distance.hpp"
@@ -56,16 +57,17 @@ engineController::EngineController engineDriver(engine1, engine2, engine3, engin
 // Distance
 distance::Distance *distanceManager = new distance::Distance(distanceController::Constants::TRIG_PIN,
                                                              distanceController::Constants::ECHO_PIN);
+double lastDistance = -1;
+
 void trigPinLow();
 void trigPinHigh();
 void measureDistance();
 
-const int MAX_ROTATES = 5;
-double lastDistance = -1;
-int rotates = 0;
+stuck::Stuck *stuckManager = new stuck::Stuck(&engineDriver);
 
 // Driver
 void drive();
+void move(double distance);
 
 thread::Thread driveThread(drive, motors::Constants::ENGINE_CHECK_INTERVAL);
 
@@ -130,7 +132,30 @@ void loop()
 void drive()
 {
     double distance = distanceManager->getDistance();
+    bool isStuck = true;
 
+    if (!stuckManager->isProcessing())
+    {
+        isStuck = stuckManager->isStuck(distance);
+    }
+
+    if (isStuck && stuckManager->ranEvade())
+    {
+        stuckManager->reset();
+    }
+
+    else if (stuckManager->isProcessing())
+    {
+        stuckManager->evade();
+    }
+    else
+    {
+        move(distance);
+    }
+}
+
+void move(double distance)
+{
     if (distance > distance::Constants::MIN_DIST && !engineDriver.isCheckingDirection())
     {
         engineDriver.driveForward();
